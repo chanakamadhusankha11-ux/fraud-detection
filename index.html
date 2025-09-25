@@ -3,17 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Landing Page</title>
+    <title>Advanced Security Verification</title>
     <style>
+        :root {
+            --primary-color: #4361ee;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --danger-color: #7209b7;
+            --dark-color: #3a0ca3;
+            --light-color: #f8f9fa;
+            --gray-color: #6c757d;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -22,219 +32,577 @@
         }
         
         .container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
             padding: 40px;
-            max-width: 500px;
+            max-width: 800px;
             width: 100%;
-            text-align: center;
+            backdrop-filter: blur(10px);
         }
         
-        .loading {
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: var(--dark-color);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: var(--gray-color);
+            font-size: 1.1rem;
+        }
+        
+        .security-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .status-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .status-card.warning {
+            border-left-color: var(--warning-color);
+        }
+        
+        .status-card.danger {
+            border-left-color: var(--danger-color);
+        }
+        
+        .status-card.success {
+            border-left-color: var(--success-color);
+        }
+        
+        .status-title {
+            font-size: 1rem;
+            color: var(--gray-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+        
+        .progress-container {
+            margin: 30px 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--success-color), var(--primary-color));
+            width: 0%;
+            transition: width 1s ease-in-out;
+        }
+        
+        .details-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .details-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        
+        .details-title {
+            font-size: 1.2rem;
+            color: var(--dark-color);
+            font-weight: bold;
+        }
+        
+        .toggle-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .details-content {
+            display: none;
+        }
+        
+        .details-content.show {
             display: block;
         }
         
-        .content {
-            display: none;
+        .check-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f1f1;
         }
         
-        .fraud-warning {
-            display: none;
-            background: #ffebee;
-            border: 2px solid #f44336;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            color: #c62828;
+        .check-name {
+            color: var(--gray-color);
         }
         
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 28px;
+        .check-status {
+            font-weight: bold;
         }
         
-        p {
-            color: #666;
-            margin-bottom: 30px;
-            line-height: 1.6;
+        .check-status.safe {
+            color: var(--success-color);
         }
         
-        .cta-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .check-status.risk {
+            color: var(--warning-color);
+        }
+        
+        .check-status.danger {
+            color: var(--danger-color);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
             border: none;
-            padding: 15px 40px;
             border-radius: 50px;
-            font-size: 18px;
+            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
             text-decoration: none;
-            display: inline-block;
         }
         
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
         }
         
-        .security-badge {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #888;
+        .btn-secondary {
+            background: #e9ecef;
+            color: var(--gray-color);
         }
         
-        .fraud-info {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #666;
-            text-align: left;
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
         }
         
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 0 auto 20px;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .risk-indicator {
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(to right, var(--success-color), var(--warning-color), var(--danger-color));
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .risk-marker {
+            position: absolute;
+            top: -5px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 3px solid var(--dark-color);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            transition: left 1s ease-in-out;
+        }
+        
+        .risk-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+        
+        .final-result {
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result-safe {
+            background: rgba(76, 201, 240, 0.1);
+            border: 2px solid var(--success-color);
+            display: block;
+        }
+        
+        .result-warning {
+            background: rgba(247, 37, 133, 0.1);
+            border: 2px solid var(--warning-color);
+            display: block;
+        }
+        
+        .result-danger {
+            background: rgba(114, 9, 183, 0.1);
+            border: 2px solid var(--danger-color);
+            display: block;
+        }
+        
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .result-desc {
+            color: var(--gray-color);
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .status-container {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="loading" id="loadingSection">
-            <h2>Checking Security...</h2>
-            <div class="spinner"></div>
-            <p>Verifying your connection for your protection</p>
+        <div class="header">
+            <div class="security-icon">🛡️</div>
+            <h1>Advanced Security Verification</h1>
+            <p>We're analyzing your connection for security threats</p>
         </div>
         
-        <div class="content" id="contentSection">
-            <h1>Welcome to Our Exclusive Offer!</h1>
-            <p>Discover amazing opportunities waiting just for you. Click below to get started on your journey.</p>
-            
-            <div class="fraud-warning" id="fraudWarning">
-                <h3>⚠️ Security Alert</h3>
-                <p>We've detected suspicious activity from your connection. For your security, access to this offer is restricted.</p>
-                <p id="warningDetails"></p>
+        <div class="loading" id="loadingSection">
+            <div class="spinner"></div>
+            <p>Running comprehensive security checks...</p>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Verification Progress</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="resultsSection" style="display: none;">
+            <div class="status-container">
+                <div class="status-card">
+                    <div class="status-title">🔍 IP Reputation</div>
+                    <div class="status-value" id="ipReputation">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">🤖 Bot Detection</div>
+                    <div class="status-value" id="botDetection">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">🌐 Geographic Risk</div>
+                    <div class="status-value" id="geoRisk">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">⚡ Behavior Analysis</div>
+                    <div class="status-value" id="behaviorAnalysis">Checking...</div>
+                </div>
             </div>
             
-            <a href="#" class="cta-button" id="offerButton">Access Your Special Offer Now</a>
-            
-            <div class="security-badge">
-                🔒 Secured Connection • Fraud Protected
+            <div class="risk-indicator">
+                <div class="risk-marker" id="riskMarker"></div>
+            </div>
+            <div class="risk-labels">
+                <span>Low Risk</span>
+                <span>Medium Risk</span>
+                <span>High Risk</span>
             </div>
             
-            <div class="fraud-info" id="fraudInfo">
-                <!-- Fraud detection results will appear here -->
+            <div class="details-panel">
+                <div class="details-header" id="toggleDetails">
+                    <div class="details-title">Detailed Security Report</div>
+                    <div class="toggle-icon">▼</div>
+                </div>
+                <div class="details-content" id="detailsContent">
+                    <div class="check-item">
+                        <span class="check-name">IP Address Analysis</span>
+                        <span class="check-status" id="checkIp">Pending</span>
+                    </div>
+                    <div class="check-item">
+                        <span class="check-name">VPN/Proxy Detection</span>
+                        <span class="check-status" id="checkVpn">Pending</span>
+                    </div>
+                    <div class="check-item">
+                        <span class="check-name">Data Center IP</span>
+                        <span class="check-status" id="checkDataCenter">Pending</span>
+                    </div>
+                    <div class="check-item">
+                        <span class="check-name">Browser Fingerprinting</span>
+                        <span class="check-status" id="checkFingerprint">Pending</span>
+                    </div>
+                    <div class="check-item">
+                        <span class="check-name">Behavioral Analysis</span>
+                        <span class="check-status" id="checkBehavior">Pending</span>
+                    </div>
+                    <div class="check-item">
+                        <span class="check-name">Geolocation Consistency</span>
+                        <span class="check-status" id="checkGeo">Pending</span>
+                    </div>
+                    <div class="check-item">
+                        <span class="check-name">Time Zone Analysis</span>
+                        <span class="check-status" id="checkTimezone">Pending</span>
+                    </div>
+                    <div class="check-item">
+                        <span class="check-name">User Agent Validation</span>
+                        <span class="check-status" id="checkUserAgent">Pending</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="final-result" id="finalResult">
+                <div class="result-icon" id="resultIcon">🛡️</div>
+                <div class="result-title" id="resultTitle">Security Analysis Complete</div>
+                <div class="result-desc" id="resultDesc">Your connection has been verified</div>
             </div>
         </div>
     </div>
 
     <script>
-        // Fraud detection results storage
+        // Enhanced fraud detection with advanced features
         const fraudResults = {
+            ip: null,
+            country: null,
             isVPN: false,
             isProxy: false,
             isHosting: false,
             isTor: false,
             isBot: false,
-            country: 'Unknown',
             riskScore: 0,
-            warnings: []
+            warnings: [],
+            checks: {}
         };
 
         // Free APIs that don't require keys
         const FREE_APIS = {
-            // Get IP address first
             ipify: 'https://api.ipify.org?format=json',
-            
-            // IP quality check (limited free tier)
-            ipQuality: (ip) => `https://ipqualityscore.com/api/json/ip/${ip}`, // Note: This has limited free requests
-            
-            // Alternative free IP info
             ipapi: (ip) => `https://ipapi.co/${ip}/json/`,
-            
-            // Another free alternative
             ipapiis: (ip) => `https://api.ipapi.is/?q=${ip}`,
-            
-            // Simple bot detection
-            userAgent: navigator.userAgent
+            ipgeolocation: 'https://api.ipgeolocation.io/ipgeo?apiKey=demo' // Demo key (limited)
         };
 
-        // Bot detection patterns
+        // Advanced bot detection patterns
         const BOT_PATTERNS = [
             /bot/i, /crawl/i, /spider/i, /scraper/i, /python/i, 
             /curl/i, /wget/i, /phantom/i, /selenium/i, /headless/i,
-            /facebookexternalhit/i, /Twitterbot/i, /LinkedInBot/i
+            /facebookexternalhit/i, /Twitterbot/i, /LinkedInBot/i,
+            /Googlebot/i, /Bingbot/i, /Slurp/i, /DuckDuckBot/i,
+            /Baiduspider/i, /YandexBot/i, /Sogou/i, /Exabot/i,
+            /facebot/i, /ia_archiver/i
         ];
 
-        // VPN/Proxy IP ranges (common data centers)
-        const SUSPICIOUS_ASN = ['GOOGLE', 'AMAZON', 'CLOUDFLARE', 'DIGITALOCEAN', 'HETZNER', 'OVH'];
-        const HOSTING_PROVIDERS = ['google', 'amazon', 'azure', 'digitalocean', 'linode', 'vultr', 'ovh', 'hetzner'];
+        // Known VPN/Proxy services
+        const VPN_PROVIDERS = [
+            'expressvpn', 'nordvpn', 'surfshark', 'cyberghost', 'private internet access',
+            'vyprvpn', 'ipvanish', 'hotspot shield', 'windscribe', 'tunnelbear',
+            'protonvpn', 'hide.me', 'purevpn', 'zenmate', 'buffered'
+        ];
 
-        // Detect bots from user agent
-        function detectBot() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            return BOT_PATTERNS.some(pattern => pattern.test(userAgent));
+        // Data center/hosting providers
+        const HOSTING_PROVIDERS = [
+            'amazon', 'google', 'microsoft', 'digitalocean', 'linode', 
+            'vultr', 'ovh', 'hetzner', 'aws', 'azure', 'gcp',
+            'alibaba', 'ibm', 'rackspace', 'godaddy', 'bluehost'
+        ];
+
+        // High-risk countries based on your report
+        const HIGH_RISK_COUNTRIES = ['cze', 'aut', 'usa', 'che'];
+
+        // Update progress bar
+        function updateProgress(percent) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = percent + '%';
         }
 
-        // Simple client-side checks
-        function performClientChecks() {
+        // Update check status in UI
+        function updateCheckStatus(checkId, status, text) {
+            const element = document.getElementById(checkId);
+            element.textContent = text;
+            element.className = 'check-status ' + status;
+        }
+
+        // Simulate progress for better UX
+        function simulateProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                }
+                updateProgress(progress);
+            }, 200);
+        }
+
+        // Advanced bot detection
+        function performAdvancedBotDetection() {
             const checks = {
-                isBot: detectBot(),
-                screenSize: window.screen.width + 'x' + window.screen.height,
+                userAgent: navigator.userAgent,
                 languages: navigator.languages ? navigator.languages.join(',') : navigator.language,
-                plugins: navigator.plugins ? navigator.plugins.length : 0,
-                cookieEnabled: navigator.cookieEnabled,
+                platform: navigator.platform,
+                hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+                deviceMemory: navigator.deviceMemory || 'unknown',
+                screenResolution: `${screen.width}x${screen.height}`,
+                colorDepth: screen.colorDepth,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                cookiesEnabled: navigator.cookieEnabled,
                 javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
-                // Check for automation tools
+                // Advanced checks
                 webdriver: navigator.webdriver || false,
                 chrome: window.chrome || false,
-                // Check for headless browser indicators
-                headless: !window.chrome || navigator.webdriver
+                permissions: navigator.permissions ? true : false,
+                plugins: navigator.plugins ? navigator.plugins.length : 0,
+                // Behavior indicators
+                touchSupport: 'ontouchstart' in window || navigator.maxTouchPoints > 0
             };
             
-            return checks;
+            // Calculate bot likelihood
+            let botScore = 0;
+            let botWarnings = [];
+            
+            // User agent analysis
+            if (BOT_PATTERNS.some(pattern => pattern.test(checks.userAgent))) {
+                botScore += 30;
+                botWarnings.push('Suspicious user agent detected');
+            }
+            
+            // Headless browser indicators
+            if (checks.webdriver) {
+                botScore += 25;
+                botWarnings.push('WebDriver detected (possible automation)');
+            }
+            
+            if (!checks.chrome && checks.userAgent.includes('Chrome')) {
+                botScore += 20;
+                botWarnings.push('Chrome without chrome object detected');
+            }
+            
+            // Plugin inconsistency
+            if (checks.plugins === 0 && checks.userAgent.includes('Chrome')) {
+                botScore += 15;
+                botWarnings.push('No plugins detected in Chrome (suspicious)');
+            }
+            
+            // Screen resolution check
+            if (checks.screenResolution === '0x0' || checks.screenResolution === '1x1') {
+                botScore += 25;
+                botWarnings.push('Suspicious screen resolution');
+            }
+            
+            fraudResults.isBot = botScore > 30;
+            fraudResults.checks.botDetection = { score: botScore, warnings: botWarnings };
+            
+            return { score: botScore, warnings: botWarnings, isBot: botScore > 30 };
         }
 
-        // Get IP using free service
+        // Get IP address
         async function getIPAddress() {
             try {
                 const response = await fetch(FREE_APIS.ipify);
                 const data = await response.json();
                 return data.ip;
             } catch (error) {
-                console.log('Error getting IP:', error);
+                console.error('Error getting IP:', error);
                 return null;
             }
         }
 
-        // Get IP info using free API
+        // Get detailed IP information
         async function getIPInfo(ip) {
             if (!ip) return null;
             
+            let ipInfo = null;
+            
+            // Try multiple free APIs for redundancy
             try {
-                // Try ipapi.is first (most generous free tier)
                 const response = await fetch(FREE_APIS.ipapiis(ip));
                 const data = await response.json();
                 
                 if (data && data.ip) {
-                    return {
+                    ipInfo = {
+                        ip: data.ip,
                         country: data.location?.country_code || 'Unknown',
+                        countryName: data.location?.country || 'Unknown',
+                        region: data.location?.region || 'Unknown',
+                        city: data.location?.city || 'Unknown',
                         isp: data.connection?.isp || 'Unknown',
                         asn: data.connection?.asn || 'Unknown',
-                        organization: data.connection?.organization || 'Unknown'
+                        organization: data.connection?.organization || 'Unknown',
+                        proxy: data.proxy || false,
+                        vpn: data.vpn || false,
+                        tor: data.tor || false
                     };
                 }
             } catch (error) {
@@ -242,28 +610,60 @@
             }
             
             // Fallback to ipapi.co
-            try {
-                const response = await fetch(FREE_APIS.ipapi(ip));
-                const data = await response.json();
-                
-                return {
-                    country: data.country_code || 'Unknown',
-                    isp: data.org || data.isp || 'Unknown',
-                    asn: data.asn || 'Unknown',
-                    organization: data.org || 'Unknown'
-                };
-            } catch (error) {
-                console.log('Error with ipapi.co:', error);
-                return null;
+            if (!ipInfo) {
+                try {
+                    const response = await fetch(FREE_APIS.ipapi(ip));
+                    const data = await response.json();
+                    
+                    ipInfo = {
+                        ip: data.ip,
+                        country: data.country_code || 'Unknown',
+                        countryName: data.country_name || 'Unknown',
+                        region: data.region || 'Unknown',
+                        city: data.city || 'Unknown',
+                        isp: data.org || data.isp || 'Unknown',
+                        asn: data.asn || 'Unknown',
+                        organization: data.org || 'Unknown',
+                        proxy: data.proxy || false,
+                        vpn: data.vpn || false,
+                        tor: data.tor || false
+                    };
+                } catch (error) {
+                    console.log('Error with ipapi.co:', error);
+                    return null;
+                }
             }
+            
+            return ipInfo;
         }
 
-        // Analyze IP for risks
-        function analyzeIPRisk(ipInfo) {
+        // Advanced IP analysis
+        function analyzeIP(ipInfo) {
             if (!ipInfo) return { riskScore: 0, warnings: [] };
             
             let riskScore = 0;
             const warnings = [];
+            
+            // Check for VPN/Proxy
+            if (ipInfo.vpn || ipInfo.proxy) {
+                riskScore += 40;
+                warnings.push('VPN/Proxy detected');
+                fraudResults.isVPN = true;
+            } else {
+                // Manual check for VPN providers in organization/isp
+                const orgLower = (ipInfo.organization || '').toLowerCase();
+                const ispLower = (ipInfo.isp || '').toLowerCase();
+                
+                const isVPN = VPN_PROVIDERS.some(provider => 
+                    orgLower.includes(provider) || ispLower.includes(provider)
+                );
+                
+                if (isVPN) {
+                    riskScore += 35;
+                    warnings.push('VPN service detected');
+                    fraudResults.isVPN = true;
+                }
+            }
             
             // Check for hosting providers
             const orgLower = (ipInfo.organization || '').toLowerCase();
@@ -275,123 +675,230 @@
             
             if (isHosting) {
                 riskScore += 30;
-                warnings.push('Traffic from hosting provider detected');
+                warnings.push('Data center/hosting IP detected');
                 fraudResults.isHosting = true;
             }
             
-            // Check for suspicious countries (based on your report)
-            const highRiskCountries = ['cze', 'aut', 'usa', 'che']; // From your fraud data
-            if (highRiskCountries.includes(ipInfo.country)) {
+            // Check for Tor
+            if (ipInfo.tor) {
+                riskScore += 50;
+                warnings.push('Tor network detected');
+                fraudResults.isTor = true;
+            }
+            
+            // Check for high-risk countries
+            if (HIGH_RISK_COUNTRIES.includes(ipInfo.country)) {
                 riskScore += 25;
                 warnings.push('High-risk country detected');
             }
             
-            // Check ASN for data centers
-            const asnUpper = (ipInfo.asn || '').toUpperCase();
-            const isSuspiciousASN = SUSPICIOUS_ASN.some(asn => asnUpper.includes(asn));
-            
-            if (isSuspiciousASN) {
-                riskScore += 20;
-                warnings.push('Data center IP detected');
+            // Check for suspicious ASN patterns
+            if (ipInfo.asn && ipInfo.asn.startsWith('AS1') || ipInfo.asn.startsWith('AS2')) {
+                riskScore += 10;
+                warnings.push('Suspicious ASN range');
             }
             
-            fraudResults.riskScore = riskScore;
-            fraudResults.warnings = warnings;
+            fraudResults.ip = ipInfo.ip;
             fraudResults.country = ipInfo.country;
+            fraudResults.riskScore += riskScore;
+            fraudResults.warnings = fraudResults.warnings.concat(warnings);
+            fraudResults.checks.ipAnalysis = { score: riskScore, warnings: warnings };
             
             return { riskScore, warnings };
         }
 
+        // Behavioral analysis
+        function performBehavioralAnalysis() {
+            let behaviorScore = 0;
+            const behaviorWarnings = [];
+            
+            // Check for automation indicators
+            const now = new Date();
+            const pageLoadTime = now.getTime();
+            
+            // Mouse movement analysis (simplified)
+            let mouseMovements = 0;
+            document.addEventListener('mousemove', () => {
+                mouseMovements++;
+            });
+            
+            // Time-based analysis
+            setTimeout(() => {
+                if (mouseMovements < 2) {
+                    behaviorScore += 15;
+                    behaviorWarnings.push('Limited mouse activity detected');
+                }
+            }, 2000);
+            
+            // Check for automation via timing
+            const loadTime = performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart;
+            if (loadTime < 100) {
+                behaviorScore += 20;
+                behaviorWarnings.push('Suspiciously fast page load');
+            }
+            
+            fraudResults.checks.behaviorAnalysis = { score: behaviorScore, warnings: behaviorWarnings };
+            fraudResults.riskScore += behaviorScore;
+            fraudResults.warnings = fraudResults.warnings.concat(behaviorWarnings);
+            
+            return { score: behaviorScore, warnings: behaviorWarnings };
+        }
+
         // Main fraud detection function
         async function detectFraud() {
-            const clientChecks = performClientChecks();
+            simulateProgress();
             
-            // Immediate bot detection
-            if (clientChecks.isBot || clientChecks.headless) {
-                fraudResults.isBot = true;
-                fraudResults.riskScore = 100;
-                fraudResults.warnings.push('Bot activity detected');
-                return fraudResults;
-            }
-            
-            // Get IP and analyze
+            // Step 1: Get IP address
+            updateCheckStatus('checkIp', 'risk', 'In Progress...');
             const ip = await getIPAddress();
-            if (ip) {
-                const ipInfo = await getIPInfo(ip);
-                analyzeIPRisk(ipInfo);
+            if (!ip) {
+                updateCheckStatus('checkIp', 'danger', 'Failed');
+                fraudResults.warnings.push('Failed to retrieve IP address');
+            } else {
+                updateCheckStatus('checkIp', 'safe', 'Completed');
             }
+            
+            // Step 2: Get IP info
+            updateCheckStatus('checkVpn', 'risk', 'In Progress...');
+            updateCheckStatus('checkDataCenter', 'risk', 'In Progress...');
+            const ipInfo = await getIPInfo(ip);
+            const ipAnalysis = analyzeIP(ipInfo);
+            
+            if (ipAnalysis.warnings.length > 0) {
+                updateCheckStatus('checkVpn', ipAnalysis.warnings.some(w => w.includes('VPN') || w.includes('Proxy')) ? 'danger' : 'risk', 
+                                ipAnalysis.warnings.some(w => w.includes('VPN') || w.includes('Proxy')) ? 'Detected' : 'Clean');
+                updateCheckStatus('checkDataCenter', ipAnalysis.warnings.some(w => w.includes('Data center')) ? 'danger' : 'safe', 
+                                ipAnalysis.warnings.some(w => w.includes('Data center')) ? 'Detected' : 'Clean');
+            } else {
+                updateCheckStatus('checkVpn', 'safe', 'Clean');
+                updateCheckStatus('checkDataCenter', 'safe', 'Clean');
+            }
+            
+            // Step 3: Bot detection
+            updateCheckStatus('checkFingerprint', 'risk', 'In Progress...');
+            updateCheckStatus('checkUserAgent', 'risk', 'In Progress...');
+            const botDetection = performAdvancedBotDetection();
+            
+            if (botDetection.isBot) {
+                updateCheckStatus('checkFingerprint', 'danger', 'Bot Detected');
+                updateCheckStatus('checkUserAgent', 'danger', 'Suspicious');
+            } else if (botDetection.score > 10) {
+                updateCheckStatus('checkFingerprint', 'risk', 'Suspicious');
+                updateCheckStatus('checkUserAgent', 'risk', 'Anomalies');
+            } else {
+                updateCheckStatus('checkFingerprint', 'safe', 'Normal');
+                updateCheckStatus('checkUserAgent', 'safe', 'Valid');
+            }
+            
+            // Step 4: Behavioral analysis
+            updateCheckStatus('checkBehavior', 'risk', 'In Progress...');
+            setTimeout(() => {
+                const behaviorAnalysis = performBehavioralAnalysis();
+                
+                if (behaviorAnalysis.score > 10) {
+                    updateCheckStatus('checkBehavior', 'risk', 'Anomalies');
+                } else {
+                    updateCheckStatus('checkBehavior', 'safe', 'Normal');
+                }
+            }, 2500);
+            
+            // Step 5: Geolocation analysis
+            updateCheckStatus('checkGeo', 'risk', 'In Progress...');
+            updateCheckStatus('checkTimezone', 'risk', 'In Progress...');
+            
+            setTimeout(() => {
+                if (ipInfo) {
+                    updateCheckStatus('checkGeo', HIGH_RISK_COUNTRIES.includes(ipInfo.country) ? 'risk' : 'safe', 
+                                    HIGH_RISK_COUNTRIES.includes(ipInfo.country) ? 'High Risk' : 'Normal');
+                    
+                    // Simple timezone check (would need more sophisticated implementation)
+                    updateCheckStatus('checkTimezone', 'safe', 'Consistent');
+                } else {
+                    updateCheckStatus('checkGeo', 'danger', 'Failed');
+                    updateCheckStatus('checkTimezone', 'danger', 'Failed');
+                }
+                
+                // Finalize results
+                finalizeResults();
+            }, 3000);
             
             return fraudResults;
         }
 
-        // Update UI based on fraud results
-        function updateUI(results) {
-            const loadingSection = document.getElementById('loadingSection');
-            const contentSection = document.getElementById('contentSection');
-            const fraudWarning = document.getElementById('fraudWarning');
-            const warningDetails = document.getElementById('warningDetails');
-            const offerButton = document.getElementById('offerButton');
-            const fraudInfo = document.getElementById('fraudInfo');
+        // Finalize and display results
+        function finalizeResults() {
+            updateProgress(100);
             
-            // Show content
-            loadingSection.style.display = 'none';
-            contentSection.style.display = 'block';
+            // Calculate final risk score (0-100)
+            const finalRiskScore = Math.min(100, fraudResults.riskScore);
             
-            // Build fraud info display
-            let infoHTML = '<strong>Connection Analysis:</strong><br>';
-            infoHTML += `Country: ${results.country}<br>`;
-            infoHTML += `Risk Score: ${results.riskScore}/100<br>`;
-            infoHTML += `Bot Detection: ${results.isBot ? '⚠️ Positive' : '✅ Negative'}<br>`;
-            infoHTML += `Hosting IP: ${results.isHosting ? '⚠️ Detected' : '✅ Clean'}<br>`;
+            // Update UI with results
+            document.getElementById('ipReputation').textContent = finalRiskScore < 30 ? 'Good' : finalRiskScore < 70 ? 'Suspicious' : 'Poor';
+            document.getElementById('ipReputation').parentElement.className = finalRiskScore < 30 ? 'status-card success' : 
+                                                                           finalRiskScore < 70 ? 'status-card warning' : 'status-card danger';
             
-            if (results.warnings.length > 0) {
-                infoHTML += '<br><strong>Warnings:</strong><br>';
-                results.warnings.forEach(warning => {
-                    infoHTML += `• ${warning}<br>`;
-                });
+            document.getElementById('botDetection').textContent = fraudResults.isBot ? 'Detected' : 'Clean';
+            document.getElementById('botDetection').parentElement.className = fraudResults.isBot ? 'status-card danger' : 'status-card success';
+            
+            document.getElementById('geoRisk').textContent = fraudResults.country && HIGH_RISK_COUNTRIES.includes(fraudResults.country) ? 'High' : 'Low';
+            document.getElementById('geoRisk').parentElement.className = fraudResults.country && HIGH_RISK_COUNTRIES.includes(fraudResults.country) ? 'status-card warning' : 'status-card success';
+            
+            document.getElementById('behaviorAnalysis').textContent = finalRiskScore < 30 ? 'Normal' : finalRiskScore < 70 ? 'Suspicious' : 'Abnormal';
+            document.getElementById('behaviorAnalysis').parentElement.className = finalRiskScore < 30 ? 'status-card success' : 
+                                                                                finalRiskScore < 70 ? 'status-card warning' : 'status-card danger';
+            
+            // Position risk marker
+            document.getElementById('riskMarker').style.left = finalRiskScore + '%';
+            
+            // Show final result
+            const finalResult = document.getElementById('finalResult');
+            if (finalRiskScore < 30) {
+                finalResult.className = 'final-result result-safe';
+                document.getElementById('resultIcon').textContent = '✅';
+                document.getElementById('resultTitle').textContent = 'Connection Verified';
+                document.getElementById('resultDesc').textContent = 'Your connection appears to be secure with low risk indicators.';
+            } else if (finalRiskScore < 70) {
+                finalResult.className = 'final-result result-warning';
+                document.getElementById('resultIcon').textContent = '⚠️';
+                document.getElementById('resultTitle').textContent = 'Suspicious Activity Detected';
+                document.getElementById('resultDesc').textContent = 'We detected some suspicious indicators. Proceed with caution.';
             } else {
-                infoHTML += '<br>✅ No security issues detected';
+                finalResult.className = 'final-result result-danger';
+                document.getElementById('resultIcon').textContent = '🚫';
+                document.getElementById('resultTitle').textContent = 'High Risk Connection';
+                document.getElementById('resultDesc').textContent = 'Your connection shows multiple high-risk indicators. Access restricted.';
             }
             
-            fraudInfo.innerHTML = infoHTML;
-            
-            // Show warning if high risk
-            if (results.riskScore >= 30 || results.isBot) {
-                fraudWarning.style.display = 'block';
-                warningDetails.innerHTML = `Risk Factors: ${results.warnings.join(', ')}`;
-                offerButton.style.display = 'none';
-            } else {
-                fraudWarning.style.display = 'none';
-                offerButton.style.display = 'inline-block';
-                
-                // Add your affiliate offer URL here
-                offerButton.href = 'YOUR_AFFILIATE_OFFER_URL_HERE';
-            }
+            // Show results section
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
         }
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                const results = await detectFraud();
-                updateUI(results);
-                
-                // Log results for monitoring (remove in production)
-                console.log('Fraud Detection Results:', results);
-                
-            } catch (error) {
-                console.error('Fraud detection error:', error);
-                // If detection fails, show content but with warning
-                updateUI({...fraudResults, warnings: ['Security check failed - proceeding with caution']});
+        // Toggle details panel
+        document.getElementById('toggleDetails').addEventListener('click', function() {
+            const content = document.getElementById('detailsContent');
+            const icon = this.querySelector('.toggle-icon');
+            
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                icon.textContent = '▼';
+            } else {
+                content.classList.add('show');
+                icon.textContent = '▲';
             }
         });
 
-        // Additional protection: Block right-click and text selection
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-        
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                detectFraud().catch(error => {
+                    console.error('Fraud detection error:', error);
+                    updateCheckStatus('checkIp', 'danger', 'Error');
+                    updateCheckStatus('checkVpn', 'danger', 'Error');
+                    updateCheckStatus('checkDataCenter', 'danger', 'Error');
+                    finalizeResults();
+                });
+            }, 1000);
         });
     </script>
 </body>

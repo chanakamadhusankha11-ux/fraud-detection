@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Landing Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .loading {
+            display: block;
+        }
+        
+        .content {
+            display: none;
+        }
+        
+        .fraud-warning {
+            display: none;
+            background: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #c62828;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .security-badge {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .fraud-info {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            text-align: left;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loading" id="loadingSection">
+            <h2>Checking Security...</h2>
+            <div class="spinner"></div>
+            <p>Verifying your connection for your protection</p>
+        </div>
+        
+        <div class="content" id="contentSection">
+            <h1>Welcome to Our Exclusive Offer!</h1>
+            <p>Discover amazing opportunities waiting just for you. Click below to get started on your journey.</p>
+            
+            <div class="fraud-warning" id="fraudWarning">
+                <h3>⚠️ Security Alert</h3>
+                <p>We've detected suspicious activity from your connection. For your security, access to this offer is restricted.</p>
+                <p id="warningDetails"></p>
+            </div>
+            
+            <a href="#" class="cta-button" id="offerButton">Access Your Special Offer Now</a>
+            
+            <div class="security-badge">
+                🔒 Secured Connection • Fraud Protected
+            </div>
+            
+            <div class="fraud-info" id="fraudInfo">
+                <!-- Fraud detection results will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fraud detection results storage
+        const fraudResults = {
+            isVPN: false,
+            isProxy: false,
+            isHosting: false,
+            isTor: false,
+            isBot: false,
+            country: 'Unknown',
+            riskScore: 0,
+            warnings: []
+        };
+
+        // Free APIs that don't require keys
+        const FREE_APIS = {
+            // Get IP address first
+            ipify: 'https://api.ipify.org?format=json',
+            
+            // IP quality check (limited free tier)
+            ipQuality: (ip) => `https://ipqualityscore.com/api/json/ip/${ip}`, // Note: This has limited free requests
+            
+            // Alternative free IP info
+            ipapi: (ip) => `https://ipapi.co/${ip}/json/`,
+            
+            // Another free alternative
+            ipapiis: (ip) => `https://api.ipapi.is/?q=${ip}`,
+            
+            // Simple bot detection
+            userAgent: navigator.userAgent
+        };
+
+        // Bot detection patterns
+        const BOT_PATTERNS = [
+            /bot/i, /crawl/i, /spider/i, /scraper/i, /python/i, 
+            /curl/i, /wget/i, /phantom/i, /selenium/i, /headless/i,
+            /facebookexternalhit/i, /Twitterbot/i, /LinkedInBot/i
+        ];
+
+        // VPN/Proxy IP ranges (common data centers)
+        const SUSPICIOUS_ASN = ['GOOGLE', 'AMAZON', 'CLOUDFLARE', 'DIGITALOCEAN', 'HETZNER', 'OVH'];
+        const HOSTING_PROVIDERS = ['google', 'amazon', 'azure', 'digitalocean', 'linode', 'vultr', 'ovh', 'hetzner'];
+
+        // Detect bots from user agent
+        function detectBot() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            return BOT_PATTERNS.some(pattern => pattern.test(userAgent));
+        }
+
+        // Simple client-side checks
+        function performClientChecks() {
+            const checks = {
+                isBot: detectBot(),
+                screenSize: window.screen.width + 'x' + window.screen.height,
+                languages: navigator.languages ? navigator.languages.join(',') : navigator.language,
+                plugins: navigator.plugins ? navigator.plugins.length : 0,
+                cookieEnabled: navigator.cookieEnabled,
+                javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
+                // Check for automation tools
+                webdriver: navigator.webdriver || false,
+                chrome: window.chrome || false,
+                // Check for headless browser indicators
+                headless: !window.chrome || navigator.webdriver
+            };
+            
+            return checks;
+        }
+
+        // Get IP using free service
+        async function getIPAddress() {
+            try {
+                const response = await fetch(FREE_APIS.ipify);
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                console.log('Error getting IP:', error);
+                return null;
+            }
+        }
+
+        // Get IP info using free API
+        async function getIPInfo(ip) {
+            if (!ip) return null;
+            
+            try {
+                // Try ipapi.is first (most generous free tier)
+                const response = await fetch(FREE_APIS.ipapiis(ip));
+                const data = await response.json();
+                
+                if (data && data.ip) {
+                    return {
+                        country: data.location?.country_code || 'Unknown',
+                        isp: data.connection?.isp || 'Unknown',
+                        asn: data.connection?.asn || 'Unknown',
+                        organization: data.connection?.organization || 'Unknown'
+                    };
+                }
+            } catch (error) {
+                console.log('Error with ipapi.is:', error);
+            }
+            
+            // Fallback to ipapi.co
+            try {
+                const response = await fetch(FREE_APIS.ipapi(ip));
+                const data = await response.json();
+                
+                return {
+                    country: data.country_code || 'Unknown',
+                    isp: data.org || data.isp || 'Unknown',
+                    asn: data.asn || 'Unknown',
+                    organization: data.org || 'Unknown'
+                };
+            } catch (error) {
+                console.log('Error with ipapi.co:', error);
+                return null;
+            }
+        }
+
+        // Analyze IP for risks
+        function analyzeIPRisk(ipInfo) {
+            if (!ipInfo) return { riskScore: 0, warnings: [] };
+            
+            let riskScore = 0;
+            const warnings = [];
+            
+            // Check for hosting providers
+            const orgLower = (ipInfo.organization || '').toLowerCase();
+            const ispLower = (ipInfo.isp || '').toLowerCase();
+            
+            const isHosting = HOSTING_PROVIDERS.some(provider => 
+                orgLower.includes(provider) || ispLower.includes(provider)
+            );
+            
+            if (isHosting) {
+                riskScore += 30;
+                warnings.push('Traffic from hosting provider detected');
+                fraudResults.isHosting = true;
+            }
+            
+            // Check for suspicious countries (based on your report)
+            const highRiskCountries = ['cze', 'aut', 'usa', 'che']; // From your fraud data
+            if (highRiskCountries.includes(ipInfo.country)) {
+                riskScore += 25;
+                warnings.push('High-risk country detected');
+            }
+            
+            // Check ASN for data centers
+            const asnUpper = (ipInfo.asn || '').toUpperCase();
+            const isSuspiciousASN = SUSPICIOUS_ASN.some(asn => asnUpper.includes(asn));
+            
+            if (isSuspiciousASN) {
+                riskScore += 20;
+                warnings.push('Data center IP detected');
+            }
+            
+            fraudResults.riskScore = riskScore;
+            fraudResults.warnings = warnings;
+            fraudResults.country = ipInfo.country;
+            
+            return { riskScore, warnings };
+        }
+
+        // Main fraud detection function
+        async function detectFraud() {
+            const clientChecks = performClientChecks();
+            
+            // Immediate bot detection
+            if (clientChecks.isBot || clientChecks.headless) {
+                fraudResults.isBot = true;
+                fraudResults.riskScore = 100;
+                fraudResults.warnings.push('Bot activity detected');
+                return fraudResults;
+            }
+            
+            // Get IP and analyze
+            const ip = await getIPAddress();
+            if (ip) {
+                const ipInfo = await getIPInfo(ip);
+                analyzeIPRisk(ipInfo);
+            }
+            
+            return fraudResults;
+        }
+
+        // Update UI based on fraud results
+        function updateUI(results) {
+            const loadingSection = document.getElementById('loadingSection');
+            const contentSection = document.getElementById('contentSection');
+            const fraudWarning = document.getElementById('fraudWarning');
+            const warningDetails = document.getElementById('warningDetails');
+            const offerButton = document.getElementById('offerButton');
+            const fraudInfo = document.getElementById('fraudInfo');
+            
+            // Show content
+            loadingSection.style.display = 'none';
+            contentSection.style.display = 'block';
+            
+            // Build fraud info display
+            let infoHTML = '<strong>Connection Analysis:</strong><br>';
+            infoHTML += `Country: ${results.country}<br>`;
+            infoHTML += `Risk Score: ${results.riskScore}/100<br>`;
+            infoHTML += `Bot Detection: ${results.isBot ? '⚠️ Positive' : '✅ Negative'}<br>`;
+            infoHTML += `Hosting IP: ${results.isHosting ? '⚠️ Detected' : '✅ Clean'}<br>`;
+            
+            if (results.warnings.length > 0) {
+                infoHTML += '<br><strong>Warnings:</strong><br>';
+                results.warnings.forEach(warning => {
+                    infoHTML += `• ${warning}<br>`;
+                });
+            } else {
+                infoHTML += '<br>✅ No security issues detected';
+            }
+            
+            fraudInfo.innerHTML = infoHTML;
+            
+            // Show warning if high risk
+            if (results.riskScore >= 30 || results.isBot) {
+                fraudWarning.style.display = 'block';
+                warningDetails.innerHTML = `Risk Factors: ${results.warnings.join(', ')}`;
+                offerButton.style.display = 'none';
+            } else {
+                fraudWarning.style.display = 'none';
+                offerButton.style.display = 'inline-block';
+                
+                // Add your affiliate offer URL here
+                offerButton.href = 'YOUR_AFFILIATE_OFFER_URL_HERE';
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const results = await detectFraud();
+                updateUI(results);
+                
+                // Log results for monitoring (remove in production)
+                console.log('Fraud Detection Results:', results);
+                
+            } catch (error) {
+                console.error('Fraud detection error:', error);
+                // If detection fails, show content but with warning
+                updateUI({...fraudResults, warnings: ['Security check failed - proceeding with caution']});
+            }
+        });
+
+        // Additional protection: Block right-click and text selection
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
